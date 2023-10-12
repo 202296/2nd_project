@@ -3,7 +3,7 @@ const arthuRoute = (req, res) => {
 }
 
 const registRoute = (req, res) => {
-    res.send('Konan Kouacou Jean Regist Junior');
+    res.send('Konan Kouacou Jean Regist Junior')
 }
 
 const kevinRoute = (req, res) => {
