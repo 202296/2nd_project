@@ -1,13 +1,31 @@
 const express = require('express');
+const dbConnect = require('./src/configs/connectDB');
 const app = express();
-const bodyParser = require('body-parser')
-// Use the JavaScript Swagger definition
 const dotenv = require('dotenv').config();
-app.use('/', require('./src/routes/path'));
+const PORT = process.env.PORT || 5500;
+const authRouter = require('./src/routes/authRoute');
+// const productRouter = require('./src/routes/productRoute')
 
+
+
+const bodyParser = require('body-parser');
+const { notFound, errorHandler } = require('./src/middlewares/errorHandler');
+const cookieParser = require('cookie-parser');
+const morgan = require('morgan')
+dbConnect()
+
+app.use(morgan("dev"))
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(cookieParser())
 
-const port = 5500;
-app.listen(process.env.PORT || port);
-console.log(`Web Server is listening at: ${process.env.PORT || port}`);
+
+app.use('/api/user', authRouter);
+// app.use('/api/product', productRouter);
+
+app.use(notFound);
+app.use(errorHandler)
+
+app.listen(PORT, ()=>{
+    console.log(`Server is running at PORT ${PORT}`);
+})
