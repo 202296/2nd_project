@@ -1,9 +1,8 @@
 const User = require('../models/authModel');
-const asyncHandler = require('express-async-handler');
 const validateMongodbId = require('../utils/validateMongodbId');
 
 
-const createUser = asyncHandler(async(req, res) => {
+const createUser = async(req, res) => {
     const email = req.body.email;
     const findUser = await User.findOne({email: email});
     if (!findUser) {
@@ -14,11 +13,11 @@ const createUser = asyncHandler(async(req, res) => {
         // User already exists
         throw new Error('User Already Exists');
     }
-});
+};
 
 // Get all user
 
-const getallUser = asyncHandler(async(req, res) =>{
+const getallUser = async(req, res) =>{
  try {
     const getUsers = await User.find();
     res.json(getUsers);
@@ -26,11 +25,11 @@ const getallUser = asyncHandler(async(req, res) =>{
   catch (error) {
         throw new Error(error)
     }
-});
+};
 
 // Get a single user
 
-const getaUser = asyncHandler(async(req, res) => {
+const getaUser = async(req, res) => {
         const {id} = req.params;
         validateMongodbId(id)
         try {
@@ -41,11 +40,45 @@ const getaUser = asyncHandler(async(req, res) => {
         } catch (error) {
             throw new Error(error);
         }
-});
+};
 
+const UpdateaUser = async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
+  
+    try {
+      const updateUser = await User.findByIdAndUpdate(id, updateData, {
+        new: true, // This option returns the updated document
+      });
+  
+      if (!updateUser) {
+          throw new Error('Contact not found');
+      }
+  
+      res.status(204).json(updateUser);
+    } catch (error) {
+      throw new Error(error);
+  }
+  };
+
+
+const deleteaUser = async(req, res) => {
+    const {id} = req.params;
+    validateMongodbId(id)
+    try {
+        const deleteaUser = await User.findByIdAndDelete(id);
+        res.json({
+            deleteaUser,
+        })
+    } catch (error) {
+        throw new Error(error);
+    }
+};
 
 module.exports = {
     createUser, 
     getallUser, 
     getaUser, 
+    UpdateaUser,
+    deleteaUser
 }
