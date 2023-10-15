@@ -8,7 +8,7 @@ const createUser = async(req, res) => {
     if (!findUser) {
         // Create a new user
         const newUser = await User.create(req.body);
-        res.json(newUser)
+        res.status(201).json({ acknowledged:true, insertedId: newContact.id });
     } else {
         // User already exists
         throw new Error('User Already Exists');
@@ -67,9 +67,7 @@ const deleteaUser = async(req, res) => {
     validateMongodbId(id)
     try {
         const deleteaUser = await User.findByIdAndDelete(id);
-        res.json({
-            deleteaUser,
-        })
+        res.status(200).json({ message: "Contact deleted successfully" });
     } catch (error) {
         throw new Error(error);
     }
