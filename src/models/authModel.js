@@ -1,4 +1,5 @@
 const mongoose = require('mongoose'); // Erase if already required
+const bcrypt = require("bcrypt");
 
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema(
@@ -40,6 +41,10 @@ var userSchema = new mongoose.Schema(
         type: String,
         required: true,
         unique: true,
+      },
+      password: {
+        type: String,
+        required: true,
       },
       role: {
         type: String,
