@@ -1,6 +1,7 @@
 const User = require('../models/authModel');
 const validateMongodbId = require('../utils/validateMongodbId');
 const { generateToken } = require('../configs/jwToken');
+const { generateRefreshToken } = require('../configs/refreshToken');
 
 const createUser = async(req, res) => {
     const email = req.body.email;
@@ -91,6 +92,7 @@ const loginAdmin = async(req, res) =>{
     }
 };
 
+
 // Get all user
 
 const getallUser = async(req, res) =>{
@@ -119,57 +121,29 @@ const getaUser = async(req, res) => {
 };
 
 const UpdateaUser = async (req, res) => {
-    const { id } = req.params;
-    const updateData = req.body;
-  
+    const {_id} = req.user;
+    validateMongodbId(_id)
     try {
-      const updateUser = await User.findByIdAndUpdate(id, updateData, {
-        new: true, // This option returns the updated document
-      });
-  
-      if (!updateUser) {
-          throw new Error('Contact not found');
-      }
-  
-      res.status(204).json(updateUser);
+        const UpdateaUser = await User.findByIdAndUpdate(_id, {
+            firstname: req?.body?.firstname,
+            lastname: req?.body?.lastname,
+            dateOfBirth: req?.body?.dateOfBirth,
+            department: req?.body?.department,
+            salary: req?.body?.salary,
+            email: req?.body?.email,
+            hireDate: req?.body?.hireDate,
+            jobTitle: req?.body?.jobTitle,
+            mobile: req?.body?.mobile,
+        },
+        {
+            new: true,
+        }
+        );
+        res.status(204).json(UpdateaUser)
     } catch (error) {
-      throw new Error(error);
-  }
-  };
-
-
-  // Logout Functionality
-
-const logout = async (req, res) => {
-    const cookie = req.cookies;
-    if (!cookie?.refreshToken) {
-      throw new Error('No Refresh Token in Cookies');
+        throw new Error(error);
     }
-  
-    const refreshToken = cookie.refreshToken;
-  
-    const user = await User.findOne({ refreshToken });
-  
-    if (!user) {
-      res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: true,
-      });
-      return res.sendStatus(204); // No Content
-    }
-  
-    await User.findOneAndUpdate(
-      { refreshToken: refreshToken }, // Corrected filter
-      { refreshToken: '' },          // Update data
-      { new: true }                  // Options, if needed
-    );
-  
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: true,
-    });
-    res.sendStatus(204); // No Content
-  };
+};
 
 
 const deleteaUser = async(req, res) => {
@@ -193,6 +167,5 @@ module.exports = {
     getallUser, 
     getaUser, 
     UpdateaUser,
-    logout,
     deleteaUser
 }
