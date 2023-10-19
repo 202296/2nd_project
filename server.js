@@ -9,6 +9,7 @@ const swaggerDefinition = require('./swagger.json');
 const dbConnect = require('./src/configs/connectDB');
 const dotenv = require('dotenv').config();
 const userRouter = require('./src/routes/authRoute');
+const prodRouter = require('./src/routes/prodRoute')
 
 
 app.use(express.json());
@@ -21,6 +22,7 @@ dbConnect()
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use("/api/user", userRouter);
+app.use('/api/product', prodRouter);
 const port = 5000;
 app.listen(process.env.PORT || port);
 console.log(`Web Server is listening at: ${process.env.PORT || port}`);
