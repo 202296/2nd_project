@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Authentication API",
-    "description": "API documentation for the Authentication API",
+    "title": "Authentication and Production API",
+    "description": "API documentation for the Authentication and Production API",
     "version": "1.0.0"
   },
   "host": "localhost:5000",
@@ -10,12 +10,12 @@
   "schemes": ["http"],
   "tags": [
     {
-      "name": "Authentication",
-      "description": "Endpoints for user authentication"
+      "name": "Authentication & Production",
+      "description": "Endpoints for user authentication and product"
     },
     {
-      "name": "Users",
-      "description": "Endpoints for managing user data"
+      "name": "Users and product",
+      "description": "Endpoints for managing user and product data"
     }
   ],
   "securityDefinitions": {
