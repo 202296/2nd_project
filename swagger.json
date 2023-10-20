@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "host": "localhost:5000",
-  "basePath": "/api/user",
+  "basePath": "/api",
   "schemes": ["http"],
   "tags": [
     {
@@ -19,14 +19,14 @@
     }
   ],
   "securityDefinitions": {
-    "jwt": {
+    "Bearer": {
       "type": "apiKey",
       "name": "Authorization",
       "in": "header"
     }
   },
   "paths": {
-    "/register": {
+    "/user/register": {
       "post": {
         "tags": ["Authentication"],
         "summary": "Create a new user",
@@ -54,8 +54,13 @@
         }
       }
     },
-    "/login": {
+    "/user/login": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": ["Authentication"],
         "summary": "User login",
         "parameters": [
@@ -79,16 +84,16 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       }
     },
-    "/admin-login": {
+    "/user/admin-login": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": ["Authentication"],
         "summary": "Admin login",
         "parameters": [
@@ -112,16 +117,16 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       }
     },
-    "/all-users": {
+    "/user/all-users": {
       "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": ["Users"],
         "summary": "Get all users",
         "responses": {
@@ -134,60 +139,16 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       }
     },
-    "/refresh": {
+    "/user/{id}": {
       "get": {
-        "tags": ["Authentication"],
-        "summary": "Refresh token",
-        "responses": {
-          "200": {
-            "description": "Token refreshed successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        },
         "security": [
           {
-            "jwt": []
+            "Bearer": []
           }
-        ]
-      }
-    },
-    "/logout": {
-      "get": {
-        "tags": ["Authentication"],
-        "summary": "User logout",
-        "responses": {
-          "204": {
-            "description": "User logged out successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
-      }
-    },
-    "/{id}": {
-      "get": {
+        ],
         "tags": ["Users"],
         "summary": "Get a user by ID",
         "parameters": [
@@ -218,14 +179,14 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       },
       "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": ["Users"],
         "summary": "Delete a user by ID",
         "parameters": [
@@ -253,16 +214,16 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       }
     },
-    "/edit-user": {
+    "/user/edit-user": {
       "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": ["Users"],
         "summary": "Edit a user's profile",
         "parameters": [
@@ -289,32 +250,35 @@
           "500": {
             "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
+        }
       }
     },
-    "/save-address": {
-      "put": {
-        "tags": ["Users"],
-        "summary": "Save user's address",
+    "/product/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": ["Products"],
+        "summary": "Create a new product",
         "parameters": [
           {
-            "name": "address",
+            "name": "body",
             "in": "body",
-            "description": "User's address",
+            "description": "Product object",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Address"
+              "$ref": "#/definitions/Product"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "User's address saved successfully"
+            "description": "Product created successfully"
+          },
+          "400": {
+            "description": "Bad request"
           },
           "401": {
             "description": "Unauthorized"
@@ -323,14 +287,144 @@
             "description": "Forbidden"
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal server error"
           }
-        },
+        }
+      },
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get all products",
+        "responses": {
+          "200": {
+            "description": "Product data retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/product/{id}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get a product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the product",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product data retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/Product"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Product not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
         "security": [
           {
-            "jwt": []
+            "Bearer": []
           }
-        ]
+        ],
+        "tags": ["Products"],
+        "summary": "Update a product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the product",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Updated product object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Product"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product updated successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Product not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": ["Products"],
+        "summary": "Delete a product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the product",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Product not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     }
   },
@@ -375,23 +469,54 @@
         }
       }
     },
-    "Address": {
-      "type": "object",
-      "properties": {
-        "address": {
-          "type": "string"
-        }
-      }
-    },
     "Credentials": {
       "type": "object",
       "properties": {
         "email": {
-          "type": "string"
+          "type": "string",
+          "format": "email"
         },
         "password": {
+          "type": "string",
+          "description": "User password. Must meet the following requirements:",
+          "minLength": 8,
+          "maxLength": 26,
+          "lowerCase": 1,
+          "upperCase": 1,
+          "numeric": 1,
+          "symbol": 1,
+          "requirementCount": 4
+        }
+      }
+    },    
+    "Product": {
+      "type": "object",
+      "properties": {
+        "productName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },"category": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        
+        "quantityInStock": {
+          "type": "number"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "supplier": {
+          "type": "string"
+        },
+        "dateAdded": {
           "type": "string"
         }
+        
       }
     }
   }
