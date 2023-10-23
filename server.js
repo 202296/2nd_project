@@ -1,36 +1,35 @@
 const express = require('express');
-const cors = require('cors');
-const { serve, setup } = require('swagger-ui-express');
+const dbConnect = require('./src/configs/connectDB');
 const app = express();
 const dotenv = require('dotenv').config();
-const dbConnect = require('./src/configs/connectDB');
+const swaggerUi = require('swagger-ui-express');;
+const PORT = process.env.PORT || 5500;
+const authRouter = require('./src/routes/authRoute');
+const productRouter = require('./src/routes/prodRoute')
+
 const bodyParser = require('body-parser');
-// Use the JavaScript Swagger definition
-const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
-
-// Middleware in order
-app.use(cors());
-app.use(morgan("dev"));
-app.use(cookieParser());
-app.use(express.json()); // or app.use(express.urlencoded({ extended: true }));
-dbConnect();
-
-// Swagger Documentation Middleware
-const swaggerDefinition = require('./swagger.json');
-app.use('/api-docs', serve, setup(swaggerDefinition));
-
-// API Routes Middleware
 const { notFound, errorHandler } = require('./src/middlewares/errorHandler');
-const userRouter = require('./src/routes/authRoute');
-const prodRouter = require('./src/routes/prodRoute');
-app.use("/api/user", userRouter);
-app.use('/api/product', prodRouter);
+const cookieParser = require('cookie-parser');
+const morgan = require('morgan')
+dbConnect()
 
-// Error Handling Middleware
-app.use(errorHandler);
+// Use the JavaScript Swagger definition
+const swaggerDefinition = require('./swagger.json');
+// Serve Swagger UI at /docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
+
+
+app.use(morgan("dev"))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(cookieParser())
+app.use('/api/user', authRouter);
+app.use('/api/product', productRouter);
+
+
 app.use(notFound);
+app.use(errorHandler)
 
-const port = 5000;
-app.listen(process.env.PORT || port);
-console.log(`Web Server is listening at: ${process.env.PORT || port}`);
+app.listen(PORT, ()=>{
+    console.log(`Server is running at PORT ${PORT}`);
+})

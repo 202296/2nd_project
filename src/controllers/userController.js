@@ -1,9 +1,12 @@
+const { generateToken } = require('../configs/jwtoken');
 const User = require('../models/authModel');
+const Product = require("../models/prodModel");
 const validateMongodbId = require('../utils/validateMongodbId');
-const { generateToken } = require('../configs/jwToken');
 const { generateRefreshToken } = require('../configs/refreshToken');
+const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
 
-const createUser = async(req, res) => {
+const createUser = asyncHandler(async(req, res) => {
     const email = req.body.email;
     const findUser = await User.findOne({email: email});
     if (!findUser) {
@@ -12,12 +15,12 @@ const createUser = async(req, res) => {
         res.status(201).json({ acknowledged:true, insertedId: newUser.id });
     } else {
         // User already exists
-        throw new Error('User Already Exists');
+        return res.status(400).json({ error: 'User Already Exists' });
     }
-};
+});
 
 
-const loginUserCtrl = async(req, res) =>{
+const loginUserCtrl = asyncHandler(async(req, res) =>{
     const {email, password} = req.body;
     // check if user exist or not
     const findUser = await User.findOne({email})
@@ -50,15 +53,15 @@ const loginUserCtrl = async(req, res) =>{
             token: generateToken(findUser?._id),
         });
     } else {
-        throw new Error('Invalid Credentials');
+        return res.status(400).json({ error: 'Invalid Credentials' });
     }
-};
+});
 
-const loginAdmin = async(req, res) =>{
+const loginAdmin = asyncHandler(async(req, res) =>{
     const {email, password} = req.body;
     // check if user exist or not
     const findAdmin = await User.findOne({email})
-    if(findAdmin.role !== 'admin') throw new Error('Not Authorised');
+    if(findAdmin.role !== 'admin') return res.status(400).json({ error: 'Not Authorized' });
     if(findAdmin && (await findAdmin.isPasswordMatched(password))) {
         const refreshToken = await generateRefreshToken(findAdmin?._id);
         const UpdateAdmin = await User.findByIdAndUpdate(
@@ -88,26 +91,26 @@ const loginAdmin = async(req, res) =>{
             token: generateToken(findAdmin?._id),
         });
     } else {
-        throw new Error('Invalid Credentials');
+        return res.status(400).json({ error: 'Invalid Credentials' });
     }
-};
+});
 
 
 // Get all user
 
-const getallUser = async(req, res) =>{
+const getallUser = asyncHandler(async(req, res) =>{
  try {
     const getUsers = await User.find();
     res.json(getUsers);
     }
   catch (error) {
-        throw new Error(error)
+    return res.status(500).json({ error: 'Internal server error' });
     }
-};
+});
 
 // Get a single user
 
-const getaUser = async(req, res) => {
+const getaUser = asyncHandler(async(req, res) => {
         const {id} = req.params;
         validateMongodbId(id)
         try {
@@ -116,11 +119,11 @@ const getaUser = async(req, res) => {
                 getaUser,
             })
         } catch (error) {
-            throw new Error(error);
+            return res.status(500).json({ error: 'Internal server error' });
         }
-};
+});
 
-const UpdateaUser = async (req, res) => {
+const UpdateaUser = asyncHandler(async (req, res) => {
     const {_id} = req.user;
     validateMongodbId(_id)
     try {
@@ -141,24 +144,76 @@ const UpdateaUser = async (req, res) => {
         );
         res.status(204).json(UpdateaUser)
     } catch (error) {
-        throw new Error(error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
-};
+});
 
 
-const deleteaUser = async(req, res) => {
+// handle refresh token
+const handleRefreshToken = asyncHandler(async (req, res) => {
+    const cookie = req.cookies;
+    if(!cookie?.refreshToken) throw new Error('No Refresh Token in Cookies');
+    const refreshToken = cookie.refreshToken;
+    const user = await User.findOne({ refreshToken });
+    if(!user) throw new Error('No Refresh token present in db or not matched');
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+        if(err || user.id !== decoded.id) {
+            throw new Error('There is something wrong with refresh token.')
+        }
+        const accessToken = generateToken(user?._id)
+        res.json({accessToken});
+    })   
+});
+
+
+// Logout Functionality
+
+const logout = asyncHandler(async (req, res) => {
+    const cookie = req.cookies;
+    console.log(cookie)
+    if (!cookie?.refreshToken) {
+      throw new Error('No Refresh Token in Cookies');
+    }
+  
+    const refreshToken = cookie.refreshToken;
+  
+    const user = await User.findOne({ refreshToken });
+  
+    if (!user) {
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: true,
+      });
+      return res.sendStatus(204); // No Content
+    }
+  
+    await User.findOneAndUpdate(
+      { refreshToken: refreshToken }, // Corrected filter
+      { refreshToken: '' },          // Update data
+      { new: true }                  // Options, if needed
+    );
+  
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: true,
+    });
+    res.sendStatus(204); // No Content
+  });
+
+
+const deleteaUser = asyncHandler(async(req, res) => {
     const {id} = req.params;
     validateMongodbId(id)
     try {
         const deleteaUser = await User.findByIdAndDelete(id);
         if (!deleteaUser) {
-            throw new Error('Contact not found');
+            return res.status(400).json({ error: 'Contact not found' });
         }
         res.status(200).json({ message: "Contact deleted successfully" });
     } catch (error) {
-        throw new Error(error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
-};
+});
 
 module.exports = {
     createUser, 
@@ -167,5 +222,7 @@ module.exports = {
     getallUser, 
     getaUser, 
     UpdateaUser,
+    handleRefreshToken,
+    logout,
     deleteaUser
 }
