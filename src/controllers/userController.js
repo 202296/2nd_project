@@ -1,11 +1,11 @@
 const User = require('../models/authModel');
 const validateMongodbId = require('../utils/validateMongodbId');
-const asyncHandler = require('express-async-handler');
 const { generateToken } = require('../configs/jwToken');
 const { generateRefreshToken } = require('../configs/refreshToken');
+const jwt = require('jsonwebtoken');
 
 
-const createUser = asyncHandler(async(req, res) => {
+const createUser = async(req, res) => {
     const email = req.body.email;
     const findUser = await User.findOne({email: email});
     if (!findUser) {
@@ -16,10 +16,10 @@ const createUser = asyncHandler(async(req, res) => {
         // User already exists
         return res.status(400).json({ error: 'User Already Exists' });
     }
-});
+};
 
 
-const loginUserCtrl = asyncHandler(async(req, res) =>{
+const loginUserCtrl = async(req, res) =>{
     const {email, password} = req.body;
     // check if user exist or not
     const findUser = await User.findOne({email})
@@ -55,9 +55,9 @@ const loginUserCtrl = asyncHandler(async(req, res) =>{
     } else {
         return res.status(400).json({ error: 'Invalid Credentials' });
     }
-});
+};
 
-const loginAdmin = asyncHandler(async(req, res) =>{
+const loginAdmin = async(req, res) =>{
     const {email, password} = req.body;
     // check if user exist or not
     const findAdmin = await User.findOne({email})
@@ -97,12 +97,12 @@ const loginAdmin = asyncHandler(async(req, res) =>{
     } else {
         return res.status(400).json({ error: 'Invalid Credentials' });
     }
-});
+};
 
 
 // Get all user
 
-const getallUser = asyncHandler(async(req, res) =>{
+const getallUser = async(req, res) =>{
  try {
     const getUsers = await User.find();
     res.json(getUsers);
@@ -110,11 +110,11 @@ const getallUser = asyncHandler(async(req, res) =>{
   catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
     }
-});
+};
 
 // Get a single user
 
-const getaUser = asyncHandler(async(req, res) => {
+const getaUser = async(req, res) => {
         const {id} = req.params;
         validateMongodbId(id)
         try {
@@ -125,9 +125,9 @@ const getaUser = asyncHandler(async(req, res) => {
         } catch (error) {
             return res.status(500).json({ error: 'Internal server error' });
         }
-});
+};
 
-const UpdateaUser = asyncHandler(async (req, res) => {
+const UpdateaUser = async (req, res) => {
     const {_id} = req.user;
     console.log(_id)
     validateMongodbId(_id)
@@ -152,11 +152,11 @@ const UpdateaUser = asyncHandler(async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+};
 
 
 // handle refresh token
-const handleRefreshToken = asyncHandler(async (req, res) => {
+const handleRefreshToken = async (req, res) => {
     const cookie = req.cookies;
     if(!cookie?.refreshToken) throw new Error('No Refresh Token in Cookies');
     const refreshToken = cookie.refreshToken;
@@ -169,14 +169,14 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
         const accessToken = generateToken(user?._id)
         res.json({accessToken});
     })   
-});
+};
 
 
 
 
 // Logout Functionality
 
-const logout = asyncHandler(async (req, res) => {
+const logout = async (req, res) => {
     const cookie = req.cookies;
     if (!cookie?.refreshToken) {
       throw new Error('No Refresh Token in Cookies');
@@ -205,10 +205,10 @@ const logout = asyncHandler(async (req, res) => {
       secure: true,
     });
     res.sendStatus(204); // No Content
-  });
+  };
 
 
-const deleteaUser = asyncHandler(async(req, res) => {
+const deleteaUser = async(req, res) => {
     const {id} = req.params;
     validateMongodbId(id)
     try {
@@ -220,7 +220,7 @@ const deleteaUser = asyncHandler(async(req, res) => {
     } catch (error) {
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+};
 
 module.exports = {
     createUser, 
