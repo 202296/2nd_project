@@ -1,10 +1,9 @@
-const { generateToken } = require('../configs/jwtoken');
 const User = require('../models/authModel');
-const Product = require("../models/prodModel");
 const validateMongodbId = require('../utils/validateMongodbId');
-const { generateRefreshToken } = require('../configs/refreshToken');
-const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
+const { generateToken } = require('../configs/jwToken');
+const { generateRefreshToken } = require('../configs/refreshToken');
+
 
 const createUser = asyncHandler(async(req, res) => {
     const email = req.body.email;
@@ -50,6 +49,7 @@ const loginUserCtrl = asyncHandler(async(req, res) =>{
             hireDate: findUser?.hireDate,
             jobTitle: findUser?.jobTitle,
             mobile: findUser?.mobile,
+            role: findUser?.role,
             token: generateToken(findUser?._id),
         });
     } else {
@@ -61,7 +61,10 @@ const loginAdmin = asyncHandler(async(req, res) =>{
     const {email, password} = req.body;
     // check if user exist or not
     const findAdmin = await User.findOne({email})
-    if(findAdmin.role !== 'admin') return res.status(400).json({ error: 'Not Authorized' });
+    if (findAdmin && findAdmin.role !== 'admin') {
+        return res.status(400).json({ error: 'Not Authorized' });
+    }
+    
     if(findAdmin && (await findAdmin.isPasswordMatched(password))) {
         const refreshToken = await generateRefreshToken(findAdmin?._id);
         const UpdateAdmin = await User.findByIdAndUpdate(
@@ -88,6 +91,7 @@ const loginAdmin = asyncHandler(async(req, res) =>{
             hireDate: findAdmin?.hireDate,
             jobTitle: findAdmin?.jobTitle,
             mobile: findAdmin?.mobile,
+            role: findAdmin?.role,
             token: generateToken(findAdmin?._id),
         });
     } else {
@@ -125,6 +129,7 @@ const getaUser = asyncHandler(async(req, res) => {
 
 const UpdateaUser = asyncHandler(async (req, res) => {
     const {_id} = req.user;
+    console.log(_id)
     validateMongodbId(_id)
     try {
         const UpdateaUser = await User.findByIdAndUpdate(_id, {
@@ -137,6 +142,7 @@ const UpdateaUser = asyncHandler(async (req, res) => {
             hireDate: req?.body?.hireDate,
             jobTitle: req?.body?.jobTitle,
             mobile: req?.body?.mobile,
+            role: req?.body?.role
         },
         {
             new: true,
@@ -166,11 +172,12 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 });
 
 
+
+
 // Logout Functionality
 
 const logout = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
-    console.log(cookie)
     if (!cookie?.refreshToken) {
       throw new Error('No Refresh Token in Cookies');
     }

@@ -5,7 +5,7 @@ const {
     getallUser, 
     getaUser, 
     deleteaUser, 
-    UpdateaUser,  
+    UpdateaUser, 
     handleRefreshToken, 
     logout, 
     loginAdmin,
@@ -28,4 +28,5 @@ router.get('/:id', authMiddleware , isAdmin, getaUser);
 router.delete('/:id', deleteaUser);
 
 router.put('/edit-user', authMiddleware, UpdateaUser);
+
 module.exports = router;
