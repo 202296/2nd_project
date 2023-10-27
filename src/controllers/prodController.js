@@ -8,7 +8,7 @@ const createProduct = async (req, res) => {
       req.body.slug = slugify(req.body.title);
     }
     const newProduct = await Product.create(req.body);
-    res.json(newProduct);
+    res.status(201).json({ acknowledged:true, insertedId: newProduct.id });
   } catch (error) {
     throw new Error(error);
   }
@@ -30,10 +30,10 @@ const updateProduct = async (req, res) => {
       );
   
       if (!updateProduct) {
-        return res.status(404).json({ message: "Product not found" });
+        return res.status(400).json({ message: "Product not found" });
       }
   
-      res.json(updateProduct);
+      res.status(204).json(updateProduct)
     } catch (error) {
       throw new Error(error);
     }
@@ -45,7 +45,7 @@ const deleteProduct = async (req, res) => {
   validateMongodbId(id);
   try {
     const deleteProduct = await Product.findOneAndDelete({_id: id});
-    res.json(deleteProduct);
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     throw new Error(error);
   }

@@ -78,7 +78,7 @@
           "200": {
             "description": "User logged in successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "500": {
@@ -111,7 +111,7 @@
           "200": {
             "description": "Admin user logged in successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "500": {
@@ -133,7 +133,7 @@
           "200": {
             "description": "User data retrieved successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "500": {
@@ -167,7 +167,7 @@
               "$ref": "#/definitions/User"
             }
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
@@ -202,7 +202,7 @@
           "204": {
             "description": "User deleted successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
@@ -210,6 +210,50 @@
           },
           "404": {
             "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/user/refresh": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": ["Users"],
+        "summary": "Refresh users Token",
+        "responses": {
+          "200": {
+            "description": "User Token refresh successfully"
+          },
+          "400": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/user/logout": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": ["Users"],
+        "summary": "Users logout",
+        "responses": {
+          "200": {
+            "description": "User logout successfully"
+          },
+          "400": {
+            "description": "Unauthorized"
           },
           "500": {
             "description": "Server error"
@@ -241,7 +285,7 @@
           "200": {
             "description": "User profile updated successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
@@ -298,7 +342,7 @@
           "200": {
             "description": "Product data retrieved successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
@@ -330,7 +374,7 @@
               "$ref": "#/definitions/Product"
             }
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
@@ -412,7 +456,7 @@
           "204": {
             "description": "Product deleted successfully"
           },
-          "401": {
+          "400": {
             "description": "Unauthorized"
           },
           "403": {
